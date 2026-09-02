@@ -106,7 +106,7 @@ def run_demo(mock_sleep_sec: float = 8.0):
     time.sleep(1.5)
 
     # Step 4: Bot B queries with completely different wording!
-    query_b = "Are there airspace restrictions near Starbase on September 4?"
+    query_b = "Are there FAA airspace restrictions around Boca Chica for September 4?"
     args_b = {"site": "faa.gov", "location": "boca chica", "date": "2026-09-04"}
 
     print("🤖 [Bot B: ops-bot] Calling Axiom cache_lookup...")

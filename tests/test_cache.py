@@ -66,7 +66,7 @@ def test_definition_of_done_test_b_semantic_safe_hit():
 
     # Bot B queries with rephrased query but compatible canonical args
     bot_b_req = CacheLookupRequest(
-        query="Are there any airspace restrictions near Starbase on September 4?",
+        query="Are there FAA airspace restrictions around Boca Chica for September 4?",
         domain="faa",
         tool_name="expensive_browser_lookup",
         canonical_args={"site": "faa.gov", "location": "boca chica", "date": "2026-09-04"},

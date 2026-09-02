@@ -8,6 +8,13 @@ import hashlib
 from typing import List, Optional
 import numpy as np
 
+# Point to local workspace cache if present for offline execution
+_local_hf = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".hf_cache"))
+if os.path.exists(_local_hf) and "HF_HOME" not in os.environ:
+    os.environ["HF_HOME"] = _local_hf
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+
 from axiom.config import DEFAULT_EMBEDDING_MODEL
 
 
