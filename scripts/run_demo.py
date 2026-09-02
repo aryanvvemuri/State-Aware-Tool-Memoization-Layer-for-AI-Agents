@@ -35,7 +35,7 @@ def print_metric(label: str, value: Any, color: str = ""):
     print(f"  • {label:<35}: {value}")
 
 
-def run_demo(mock_sleep_sec: float = 8.0):
+def run_demo(mock_sleep_sec: float = 8.0, include_concurrency: bool = True):
     cache = AxiomCache(telemetry=global_telemetry)
     
     print_banner("Axiom: State-Aware Tool Memoization Layer for GrokBot")
@@ -230,6 +230,64 @@ def run_demo(mock_sleep_sec: float = 8.0):
     time.sleep(1.5)
 
     # -----------------------------------------------------------------------
+    # DEMO 4: Concurrency / Request Coalescing (Single-Flight)
+    # -----------------------------------------------------------------------
+    if include_concurrency:
+        print_banner("Demo 4 — Concurrency & Request Coalescing (Single-Flight)")
+        print("Scenario: 5 GrokBot agents simultaneously request the same un-memoized data.")
+        print("Without Axiom: 5 separate expensive executions.")
+        print("With Axiom: 1 single execution, 4 callers wait and reuse result.\n")
+
+        import asyncio
+        from axiom.singleflight import SingleFlightGroup
+        from axiom.mock_tools import aexpensive_browser_lookup
+
+        sf = SingleFlightGroup(telemetry=global_telemetry)
+        exec_count = 0
+
+        async def worker():
+            nonlocal exec_count
+            exec_count += 1
+            return await aexpensive_browser_lookup(
+                site="faa.gov",
+                location="Boca Chica",
+                date="2026-09-08",
+                query="FAA flight restrictions September 8",
+                sleep_seconds=max(1.0, mock_sleep_sec / 2.0),
+                bot_id="leader-bot",
+                telemetry=global_telemetry,
+            )
+
+        async def bot_call(bot_name: str):
+            t_start = time.perf_counter()
+            res, is_leader = await sf.execute(
+                tool_name="expensive_browser_lookup",
+                canonical_args={"site": "faa.gov", "location": "Boca Chica", "date": "2026-09-08"},
+                worker_fn=worker,
+                bot_id=bot_name,
+            )
+            elapsed = (time.perf_counter() - t_start) * 1000.0
+            return bot_name, is_leader, elapsed
+
+        async def run_concurrent():
+            bots = ["agent-alpha", "agent-beta", "agent-gamma", "agent-delta", "agent-epsilon"]
+            print(f"🚀 Launching 5 concurrent requests from: {', '.join(bots)}...")
+            t_batch_start = time.perf_counter()
+            results = await asyncio.gather(*(bot_call(b) for b in bots))
+            total_time = (time.perf_counter() - t_batch_start)
+            return results, total_time
+
+        results, total_time = asyncio.run(run_concurrent())
+        print(f"\n   Total batch time: {total_time:.2f}s")
+        for b_name, is_lead, lat in results:
+            role = "👑 LEADER (Executed Tool)" if is_lead else "⚡ FOLLOWER (Coalesced & Reused)"
+            print(f"   • {b_name:<15}: {role} | Latency: {lat:.1f}ms")
+
+        print("   " + "─" * 60)
+        print(f"   5 Callers → {exec_count} Tool Execution ({len(results) - exec_count} Executions Avoided!)")
+        time.sleep(1.5)
+
+    # -----------------------------------------------------------------------
     # SUMMARY
     # -----------------------------------------------------------------------
     print_banner("Axiom Live Telemetry Summary")
@@ -242,6 +300,7 @@ def run_demo(mock_sleep_sec: float = 8.0):
     print_metric("Average Cache Hit Latency", f"{stats['avg_hit_latency_ms']:.2f} ms")
     print_metric("Total Execution Time Saved", f"{stats['estimated_latency_saved_sec']:.2f} seconds")
     print_metric("Invalidations Executed", stats["invalidations_count"])
+    print_metric("Single-Flight Collapsed Requests", stats["single_flight_collapsed"])
     print_metric("Miss Reasons Breakdown", stats["miss_reasons"])
     print("=" * 76 + "\n")
 
@@ -249,7 +308,9 @@ def run_demo(mock_sleep_sec: float = 8.0):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Axiom Demos")
     parser.add_argument("--fast", action="store_true", help="Run with faster sleep delays (2s)")
+    parser.add_argument("--concurrency", action="store_true", default=True, help="Include Demo 4 concurrency coalescing")
+    parser.add_argument("--no-concurrency", dest="concurrency", action="store_false", help="Skip Demo 4")
     args = parser.parse_args()
 
     sleep_time = 2.0 if args.fast else 8.0
-    run_demo(mock_sleep_sec=sleep_time)
+    run_demo(mock_sleep_sec=sleep_time, include_concurrency=args.concurrency)
