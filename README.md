@@ -183,15 +183,14 @@ streamlit run dashboard/app.py
 
 ---
 
-## 7. Measured Demo Results
-
 | Demo Scenario | Action / Query | Measured Duration | Result | Safety Verdict |
 | :--- | :--- | :--- | :--- | :--- |
 | **Demo 1 (Bot A)** | *"Find FAA restrictions around Boca Chica for Sept 4"* | **8,012 ms** | Cache Miss → Tool Executed → Write | Stored for reuse |
-| **Demo 1 (Bot B)** | *"Are there airspace restrictions near Starbase on Sept 4?"* | **114 ms** | **SAFE HIT** (Sim: 0.941) | **70x Speedup / ~7.9s saved** |
-| **Demo 2 (Bot C)** | *"Find FAA restrictions around Boca Chica for Sept 5"* | **1.2 ms** | **SAFE MISS** (Sim: 0.924, Arg Mismatch) | **Prevented stale Sept 4 reuse** |
-| **Demo 3 (Invalidation)** | `cache_invalidate(["faa", "boca_chica"])` | **0.4 ms** | 1 Record Tombstoned | Freshness maintained |
-| **Demo 3 (Bot B Repeat)**| *"Are there airspace restrictions near Starbase on Sept 4?"* | **4,015 ms** | Cache Miss → Fresh Tool Executed | Data updated after invalidation |
+| **Demo 1 (Bot B)** | *"Are there FAA airspace restrictions around Boca Chica for Sept 4?"* | **40 ms** | **SAFE HIT** (Sim: 0.913) | **197x Speedup / ~7.97s saved** |
+| **Demo 2 (Bot C)** | *"Find FAA restrictions around Boca Chica for Sept 5"* | **0.4 ms** | **SAFE MISS** (Sim: 0.985, Arg Mismatch) | **Prevented stale Sept 4 reuse** |
+| **Demo 3 (Invalidation)** | `cache_invalidate(["faa", "boca_chica"])` | **0.2 ms** | 1 Record Tombstoned | Freshness maintained |
+| **Demo 3 (Bot B Repeat)**| *"Are there FAA airspace restrictions around Boca Chica for Sept 4?"* | **4,015 ms** | Cache Miss → Fresh Tool Executed | Data updated after invalidation |
+| **Demo 4 (Concurrency)** | 5 Concurrent callers (`alpha`, `beta`, `gamma`, `delta`, `epsilon`) | **1,003 ms batch** | 1 Leader execution, 4 Coalesced | **4 tool executions avoided** |
 
 ---
 
