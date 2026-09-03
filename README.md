@@ -1,5 +1,7 @@
 # Axiom: State-Aware Tool Memoization Layer for GrokBot
 
+[![CI](https://github.com/aryanvvemuri/State-Aware-Tool-Memoization-Layer-for-AI-Agents/actions/workflows/ci.yml/badge.svg)](https://github.com/aryanvvemuri/State-Aware-Tool-Memoization-Layer-for-AI-Agents/actions/workflows/ci.yml)
+
 > **"Semantic similarity alone is not sufficient for cache correctness. Axiom combines semantic matching with canonical tool arguments, freshness, and invalidation metadata to determine whether a previous tool execution can safely be reused."**
 
 ---
