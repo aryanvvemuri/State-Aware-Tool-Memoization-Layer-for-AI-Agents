@@ -8,8 +8,8 @@ _local_hf = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".hf_c
 if os.path.exists(_local_hf) and "HF_HOME" not in os.environ:
     os.environ["HF_HOME"] = _local_hf
 
-# Similarity threshold (can be calibrated via scripts/calibrate_threshold.py)
-DEFAULT_SIMILARITY_THRESHOLD: float = float(os.getenv("AXIOM_SIMILARITY_THRESHOLD", "0.82"))
+# Similarity threshold (calibrated via scripts/calibrate_threshold.py: 90% recall on equivalents, 0% FPR on unrelated)
+DEFAULT_SIMILARITY_THRESHOLD: float = float(os.getenv("AXIOM_SIMILARITY_THRESHOLD", "0.75"))
 
 # Embedding model name
 DEFAULT_EMBEDDING_MODEL: str = os.getenv("AXIOM_EMBEDDING_MODEL", "all-MiniLM-L6-v2")

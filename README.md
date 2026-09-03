@@ -183,7 +183,24 @@ streamlit run dashboard/app.py
 
 ---
 
-| Demo Scenario | Action / Query | Measured Duration | Result | Safety Verdict |
+## 7. Empirical Threshold Calibration
+
+To prevent arbitrary threshold selection, Axiom includes an empirical calibration benchmark (`scripts/calibrate_threshold.py`) evaluating 60 query pairs with `all-MiniLM-L6-v2`:
+- **Equivalent Pairs Mean Similarity**: `0.8584` (Min: `0.6611`, Max: `0.9480`)
+- **Near-Miss Pairs Mean Similarity**: `0.7927` (Min: `0.5107`, Max: `0.9847`)
+- **Unrelated Pairs Mean Similarity**: `0.0265` (Min: `-0.1836`, Max: `0.1881`)
+
+### The Calibration Insight: Why Semantic Similarity Inverts Safety
+At the calibrated retrieval threshold of **`0.75`**:
+- **90.0% Recall (TPR)** on true equivalent paraphrases.
+- **0.0% False Positives (FPR)** on unrelated queries.
+- **60.0% Near-Miss Passthrough**: 60% of near-miss queries (e.g. changing `September 4` to `September 5` or swapping resource IDs) pass the semantic similarity check because they share ~90% identical tokens.
+
+This empirically proves Axiom's thesis: **semantic retrieval must act strictly as a high-recall candidate filter, while structured canonical argument compatibility guarantees correctness and safety**.
+
+---
+
+## 8. Measured Demo Results
 | :--- | :--- | :--- | :--- | :--- |
 | **Demo 1 (Bot A)** | *"Find FAA restrictions around Boca Chica for Sept 4"* | **8,012 ms** | Cache Miss → Tool Executed → Write | Stored for reuse |
 | **Demo 1 (Bot B)** | *"Are there FAA airspace restrictions around Boca Chica for Sept 4?"* | **40 ms** | **SAFE HIT** (Sim: 0.913) | **197x Speedup / ~7.97s saved** |
@@ -194,7 +211,7 @@ streamlit run dashboard/app.py
 
 ---
 
-## 8. GrokBot Integration Guide
+## 9. GrokBot Integration Guide
 
 To connect GrokBot agents to Axiom:
 
